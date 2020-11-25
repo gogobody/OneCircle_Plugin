@@ -139,8 +139,9 @@ class OneCircle_Action extends Widget_Abstract_Contents implements Widget_Interf
     function getDescriptionFromContent($content, $count)
     {
         preg_match("/<title>(.*?)<\/title>/s", $content, $title);
-        if (count($title) == 0) {
+        if (count($title) == 0 || empty(trim($title[1]))) {
             preg_match('/<meta +name *=["\']?description["\']? *content=["\']?([^<>"]+)["\']?/i', $content, $res);
+
             if (count($res) == 0) { //match failed
                 $content = preg_replace("@<script(.*?)</script>@is", "", $content);
                 $content = preg_replace("@<iframe(.*?)</iframe>@is", "", $content);
@@ -157,7 +158,6 @@ class OneCircle_Action extends Widget_Abstract_Contents implements Widget_Interf
             $content = $title[1];
         }
         $content = trim($content);
-
         $res = mb_substr($content, 0, $count, 'UTF-8');
         if (mb_strlen($content, 'UTF-8') > $count) {
             $res = $res . "...";
