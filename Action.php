@@ -41,7 +41,11 @@ class OneCircle_Action extends Widget_Abstract_Contents implements Widget_Interf
                 }
                 $url = $request->get('url');
                 $html = $this->getUrlContent($url);
-                print_r($this->getDescriptionFromContent($html, 120));
+                $this->response->throwJson(array(
+                    "msg" => "",
+                    "code" => 1,
+                    "data" => $this->getDescriptionFromContent($html, 120)
+                ));
                 break;
             // 用于主页前台发布
             case "getsecuritytoken":
@@ -56,7 +60,11 @@ class OneCircle_Action extends Widget_Abstract_Contents implements Widget_Interf
                 if ($request->isPost()) {
 
                     $security = $this->widget('Widget_Security');
-                    echo $security->getToken($this->request->getReferer());
+                    $this->response->throwJson(array(
+                        "msg" => "",
+                        "code" => 1,
+                        "data" => $security->getToken($this->request->getReferer())
+                    ));
                     break;
 
                 }
@@ -69,7 +77,11 @@ class OneCircle_Action extends Widget_Abstract_Contents implements Widget_Interf
                     $url = $request->get('url');
                     $path = Typecho_Router::url('do', array('action' => 'login', 'widget' => 'Login'),
                         Typecho_Common::url('index.php', $this->rootUrl));
-                    echo $this->getTokenUrl($path, $url);
+                    $this->response->throwJson(array(
+                        "msg" => "",
+                        "code" => 1,
+                        "data" => $this->getTokenUrl($path, $url)
+                    ));
                     break;
                 }
                 echo 'error';
