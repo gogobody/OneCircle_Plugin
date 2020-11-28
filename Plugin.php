@@ -182,6 +182,9 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         $WechatPic = new Typecho_Widget_Helper_Form_Element_Text('WechatPic', NULL, _t($wxpay), _t('微信二维码'), _t('打赏中使用的微信二维码,建议尺寸小于250×250,且为正方形'));
         $form->addInput($WechatPic);
 
+        //以下为博客设置
+
+
     }
 
     /**
