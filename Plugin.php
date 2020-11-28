@@ -147,6 +147,15 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
             array('contributor-nb','register-nb'), _t('拓展设置'), _t(''));
         $form->addInput($tuozhan->multiMode());
 
+        //
+        $db = Typecho_Db::get();
+        $select = $db->select('mid')->from('table.metas');
+        $row = $db->fetchRow($select);
+        if (!empty($row)) $umid = $row['mid'];
+        else $umid = 1;
+        $registeruserMid = new Typecho_Widget_Helper_Form_Element_Text('registeruserMid', NULL, _t($umid), _t('用户注册后默认关注哪个分类（int）'));
+        $form->addInput($registeruserMid);
+
         $focususerMid = new Typecho_Widget_Helper_Form_Element_Text('focususerMid', NULL, 1, _t('发布关注消息到哪个分类（int）'));
         $form->addInput($focususerMid);
 
@@ -677,8 +686,9 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
     // add default faned tag , 用户注册的时候添加默认关注
     public static function addDefaultTag($uid){
         $db = Typecho_Db::get();
+        $umid = Typecho_Widget::widget('Widget_Options')->plugin('OneCircle')->registeruserMid;
         $insert = $db->insert('table.circle_follow')
-            ->rows(array('uid' => $uid, 'mid' => 1));
+            ->rows(array('uid' => $uid, 'mid' => $umid));
         $db->query($insert);
     }
     // 添加新的 Page
