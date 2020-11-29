@@ -9,6 +9,7 @@ class Widget_blog extends Widget_Archive
     public static function handle($archive, $select)
     {
         $archive->setArchiveType('myblog');
+        $select->where('table.contents.type = ?', 'post');
 
 
         /** 仅输出文章 */
