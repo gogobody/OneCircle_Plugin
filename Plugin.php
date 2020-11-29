@@ -65,7 +65,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         /** 这里要注意区分不同的 archive 实例 */
         Helper::addRoute('neighbor_page', '/neighbor/[keyword]/[page:digital]/', 'Widget_Archive@neighbor_page', 'render');
         Helper::addRoute('neighbor', '/neighbor/[keyword]/', 'Widget_Archive@neighbor', 'render');
-        Helper::addRoute('blog', '/blog/', 'Widget_Archive@blog_', 'render');
+        Helper::addRoute('myblog', '/myblog/', 'Widget_Archive@myblog', 'render');
+        Helper::addRoute('myblog_page', '/myblog/[page:digital]/', 'Widget_Archive@myblog_page', 'render');
 
         // 页面注册
         Typecho_Plugin::factory('Widget_Archive')->handleInit_1000 = array('OneCircle_Plugin','handleInit');
@@ -106,7 +107,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Helper::addRoute("one_action", "/oneaction", "OneCircle_Action", 'route');
 
 
-        Helper::addPanel(3, 'OneCircle/manage/manage-cat-tags.php', '管理分类', '管理分类', 'administrator'); //editor //contributor
+        Helper::addPanel(3, 'OneCircle/manage/manage-cat-tags.php', '管理圈子分类', '圈子分类', 'administrator'); //editor //contributor
 
     }
 
@@ -123,6 +124,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Helper::removeRoute('metas');
         Helper::removeRoute('neighbor');
         Helper::removeRoute('neighbor_page');
+        Helper::removeRoute('myblog');
+        Helper::removeRoute('myblog_page');
 
         Helper::removePanel(3, 'OneCircle/manage/manage-cat-tags.php');
     }
@@ -722,7 +725,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
             Widget_Metasmanage::handle($archive);
         }elseif ($type == 'neighbor' or $type == 'neighbor_page'){
             Widget_Neighbor::handle($archive,$select);
-        }elseif ($type == 'blog'){
+        }elseif ($type == 'myblog' or $type == 'myblog_page'){
             Widget_blog::handle($archive,$select);
         }
 
