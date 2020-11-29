@@ -2,6 +2,10 @@
 
 include Helper::options()->themeFile('onecircle','libs/language.php');
 
+/**
+ * neighbor
+ * Class Widget_Neighbor
+ */
 class Widget_Neighbor extends Widget_Archive
 {
     public static function handle($archive, $select)

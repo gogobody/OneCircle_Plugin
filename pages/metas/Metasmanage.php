@@ -58,7 +58,7 @@ class Widget_Metasmanage extends Typecho_Widget
 
         // 默认tagid  =0 ，就是默认分类
         $db = Typecho_Db::get();
-        $sql = "SELECT t.*,t1.name AS tagname,t1.slug AS tagslug,t1.`order` AS tagorder FROM typecho_metas t LEFT JOIN `".$db->getPrefix()."metas` t1 on t.`type` = 'category' and t1.`type` = 'tag' and t.`tagid` = t1.`mid` WHERE t.`type` = 'category' ORDER BY t1.`order`,t.`order`";
+        $sql = "SELECT t.*,t1.name AS tagname,t1.slug AS tagslug,t1.`order` AS tagorder FROM typecho_metas t LEFT JOIN `".$db->getPrefix()."metas` t1 on t.`type` = 'category' and t1.`type` = 'catetag' and t.`tagid` = t1.`mid` WHERE t.`type` = 'category' ORDER BY t1.`order`,t.`order`";
         // 压入 this
         $res = $db->fetchAll($sql, array($archive, 'push'));
         // while($this->next())
@@ -87,7 +87,7 @@ class Widget_Metasmanage extends Typecho_Widget
             ));
         }
         // select all tags 选取所有的 tag
-        $tags = $db->fetchAll($db->select()->from('table.metas')->where('type =?','tag'));
+        $tags = $db->fetchAll($db->select()->from('table.metas')->where('type =?','catetag'));
         $tags_all = array();
         array_push($tags_all,array(
             'id' => 0,

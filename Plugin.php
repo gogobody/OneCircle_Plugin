@@ -13,6 +13,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 require(__DIR__ . DIRECTORY_SEPARATOR . "Action.php");
 require_once 'pages/metas/Metasmanage.php';
 require_once 'pages/neighbor/Widget_Neighbor.php';
+require_once 'pages/blog/Widget_blog.php';
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "manage/Widget_CateTag_Edit.php");
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/upload.php");
 
 
@@ -63,6 +65,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         /** 这里要注意区分不同的 archive 实例 */
         Helper::addRoute('neighbor_page', '/neighbor/[keyword]/[page:digital]/', 'Widget_Archive@neighbor_page', 'render');
         Helper::addRoute('neighbor', '/neighbor/[keyword]/', 'Widget_Archive@neighbor', 'render');
+        Helper::addRoute('blog', '/blog/', 'Widget_Archive@blog_', 'render');
 
         // 页面注册
         Typecho_Plugin::factory('Widget_Archive')->handleInit_1000 = array('OneCircle_Plugin','handleInit');
@@ -99,7 +102,11 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         // action method url : /action/oneapi
 //        Helper::addAction('oneapi', 'OneCircle_Action');
         // route method url : /oneaction
+
         Helper::addRoute("one_action", "/oneaction", "OneCircle_Action", 'route');
+
+
+        Helper::addPanel(3, 'OneCircle/manage/manage-cat-tags.php', '管理分类', '管理分类', 'administrator'); //editor //contributor
 
     }
 
@@ -117,6 +124,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Helper::removeRoute('neighbor');
         Helper::removeRoute('neighbor_page');
 
+        Helper::removePanel(3, 'OneCircle/manage/manage-cat-tags.php');
     }
 
     /**
@@ -128,6 +136,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
      */
     public static function config(Typecho_Widget_Helper_Form $form)
     {
+
         /** 分类名称 */
 //        $name = new Typecho_Widget_Helper_Form_Element_Text('word', NULL, 'Hello World', _t('说点什么'));
 //        $form->addInput($name);
@@ -183,7 +192,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         $form->addInput($WechatPic);
 
         //以下为博客设置
-
+        $blogMid = new Typecho_Widget_Helper_Form_Element_Text('blogMid', NULL, NULL, _t('展示的博客分类mid'), _t('输入需要展示的博客分类的mid，空格分隔'));
+        $form->addInput($blogMid);
 
     }
 
@@ -712,6 +722,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
             Widget_Metasmanage::handle($archive);
         }elseif ($type == 'neighbor' or $type == 'neighbor_page'){
             Widget_Neighbor::handle($archive,$select);
+        }elseif ($type == 'blog'){
+            Widget_blog::handle($archive,$select);
         }
 
         return true; // 不输出文章 // 查看源码

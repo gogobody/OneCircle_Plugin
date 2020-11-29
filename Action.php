@@ -9,16 +9,11 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * @version 2.0.0
  * @link https://blog.gogobody.cn
  */
-class OneCircle_Action extends Widget_Abstract_Contents implements Widget_Interface_Do
+class OneCircle_Action extends Widget_Abstract_Contents
 {
     public function __construct($request, $response, $params = NULL)
     {
         parent::__construct($request, $response, $params);
-    }
-
-    public function execute()
-    {
-        //Do nothing
     }
 
     // do /oneaction  apis
@@ -216,13 +211,6 @@ class OneCircle_Action extends Widget_Abstract_Contents implements Widget_Interf
         }
         return false;
     }
-
-    // do /action/oneapi apis
-    public function action()
-    {
-
-    }
-
 
 }
 
