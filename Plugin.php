@@ -126,7 +126,6 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Helper::removeRoute('neighbor_page');
         Helper::removeRoute('myblog');
         Helper::removeRoute('myblog_page');
-
         Helper::removePanel(3, 'OneCircle/manage/manage-cat-tags.php');
     }
 
@@ -193,10 +192,6 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         //微信二维码
         $WechatPic = new Typecho_Widget_Helper_Form_Element_Text('WechatPic', NULL, _t($wxpay), _t('微信二维码'), _t('打赏中使用的微信二维码,建议尺寸小于250×250,且为正方形'));
         $form->addInput($WechatPic);
-
-        //以下为博客设置
-        $blogMid = new Typecho_Widget_Helper_Form_Element_Text('blogMid', NULL, NULL, _t('展示的博客分类mid'), _t('输入需要展示的博客分类的mid，空格分隔'));
-        $form->addInput($blogMid);
 
     }
 
@@ -718,9 +713,9 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
     }
 
     public static function handle($type,$archive,$select){
-//        $fp = fopen('write.txt', 'a+b'); //a+读写方式打开，将文件指针指向文件末尾。b为强制使用二进制模式. 如果文件不存在则尝试创建之。
-//        fwrite($fp,print_r("-handle:".$type."--".$archive->parameter."--".$archive->request->metatag."--\r\n",true));
-//        fclose($fp); //关闭打开的文件。
+        $fp = fopen('write.txt', 'a+b'); //a+读写方式打开，将文件指针指向文件末尾。b为强制使用二进制模式. 如果文件不存在则尝试创建之。
+        fwrite($fp,print_r("-handle:".$type."--".$archive->parameter."--".$archive->request->metatag."--\r\n",true));
+        fclose($fp); //关闭打开的文件。
         if ($type == 'metas'){
             Widget_Metasmanage::handle($archive);
         }elseif ($type == 'neighbor' or $type == 'neighbor_page'){
