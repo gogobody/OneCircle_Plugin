@@ -366,7 +366,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
     {
         // 给文章发布添加高德地图信息
         $contents = $obj->request->from('name','district','address');
-        $obj->db->query($obj->db->sql()->where('cid = ?', $obj->cid)->update('table.contents')->rows($contents));
+        $db = Typecho_Db::get();
+        $db->query($db->sql()->where('cid = ?', $obj->cid)->update('table.contents')->rows($contents));
 
         /** 跳转验证后地址 */
         if ($obj->request->referer == 'return') {
