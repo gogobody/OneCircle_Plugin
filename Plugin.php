@@ -14,9 +14,15 @@ require(__DIR__ . DIRECTORY_SEPARATOR . "Action.php");
 require_once 'pages/metas/Metasmanage.php';
 require_once 'pages/neighbor/Widget_Neighbor.php';
 require_once 'pages/blog/Widget_blog.php';
+require_once 'pages/usercenter/Widget_usercenter.php';
+
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "manage/Widget_CateTag_Edit.php");
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/upload.php");
-
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Credits.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Common.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Users/Query.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Credits/List.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Abstract/Credits.php");
 
 
 class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interface
@@ -67,6 +73,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Helper::addRoute('neighbor', '/neighbor/[keyword]/', 'Widget_Archive@neighbor', 'render');
         Helper::addRoute('myblog', '/myblog/', 'Widget_Archive@myblog', 'render');
         Helper::addRoute('myblog_page', '/myblog/[page:digital]/', 'Widget_Archive@myblog_page', 'render');
+        Helper::addRoute('setting', '/usercenter/setting', 'Widget_Archive@usercenter_settiing', 'render');
+        Helper::addRoute('credits', '/usercenter/credits', 'Widget_Archive@usercenter_credits', 'render');
 
         // 页面注册
         Typecho_Plugin::factory('Widget_Archive')->handleInit_1000 = array('OneCircle_Plugin','handleInit');
@@ -82,6 +90,10 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Typecho_Plugin::factory('Widget_Contents_Post_Edit')->write_1000 = array('OneCircle_Plugin', 'fabu');
         Typecho_Plugin::factory('Widget_Contents_Post_Edit')->finishPublish_1000 = array('OneCircle_Plugin', 'fabuwan');
         Typecho_Plugin::factory('admin/footer.php')->end_1000 = array('OneCircle_Plugin', 'footerjs');
+        // 积分
+        Typecho_Plugin::factory('Widget_Login')->loginSucceed_1000 = array('OneCircle_Plugin', 'loginSucceed');
+        Typecho_Plugin::factory('Widget_Feedback')->finishComment_1000 = array('OneCircle_Plugin', 'finishComment');
+
 
         // 添加 关注圈子
         OneCircle_Plugin::userCircleFollowInstall();
@@ -98,7 +110,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         OneCircle_Plugin::userSexsqlInstall();
         // 添加文章额外字段
         OneCircle_Plugin::contentsSqlInstall();
-
+        OneCircle_Plugin::typecho_TableInstall();
+        OneCircle_Plugin::userExtendsqlInstall();
         // register apis
         // action method url : /action/oneapi
 //        Helper::addAction('oneapi', 'OneCircle_Action');
@@ -126,6 +139,9 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Helper::removeRoute('neighbor_page');
         Helper::removeRoute('myblog');
         Helper::removeRoute('myblog_page');
+        Helper::removeRoute('setting');
+        Helper::removeRoute('credits');
+
         Helper::removePanel(3, 'OneCircle/manage/manage-cat-tags.php');
     }
 
@@ -327,7 +343,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         $obj->widget('Widget_Notice')->set(_t('用户 <strong>%s</strong> 已经成功注册, 密码为 <strong>%s</strong>', $obj->screenName, $wPassword), 'success');
         // add default follow circle
         OneCircle_Plugin::addDefaultTag($obj->user->uid);
-
+        //注册积分
+        Widget_Common::credits('register');
         /*跳转地址(后台)*/
         if (NULL != $obj->request->referer) {
             $obj->response->redirect($obj->request->referer);
@@ -368,7 +385,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         $contents = $obj->request->from('name','district','address');
         $db = Typecho_Db::get();
         $db->query($db->sql()->where('cid = ?', $obj->cid)->update('table.contents')->rows($contents));
-
+        // 发步完文章触发积分机制
+        Widget_Common::credits('publish',null,$obj->cid);
         /** 跳转验证后地址 */
         if ($obj->request->referer == 'return') {
             exit;
@@ -656,6 +674,115 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
             throw new Typecho_Plugin_Exception('数据表检测失败，用户性别插件启用失败。错误号：'.$code);
         }
     }
+    // 添加用户额外字段
+    public static function userExtendsqlInstall()
+    {
+        $db = Typecho_Db::get();
+        $type = explode('_', $db->getAdapterName());
+        $type = array_pop($type);
+        $prefix = $db->getPrefix();
+        try {
+            $select = $db->select('table.users.location','table.users.credits','table.users.extend','table.users.level')->from('table.users');
+            $db->query($select);
+            return '检测到用户，插件启用成功';
+        } catch (Typecho_Db_Exception $e) {
+            $code = $e->getCode();
+            if(('Mysql' == $type && (0 == $code ||1054 == $code || $code == '42S22')) ||
+                ('SQLite' == $type && ('HY000' == $code || 1 == $code))) {
+                try {
+                    if ('Mysql' == $type) {
+                        $db->query("ALTER TABLE `".$prefix."users` ADD `location` VARCHAR( 120 )  DEFAULT '' COMMENT '用户位置';");
+                        $db->query("ALTER TABLE `".$prefix."users` ADD `credits` int(10) unsigned   DEFAULT 0 COMMENT '用户信用';");
+                        $db->query("ALTER TABLE `".$prefix."users` ADD `level` int(2) unsigned   DEFAULT 1 COMMENT '用户等级';");
+                        $db->query("ALTER TABLE `".$prefix."users` ADD `extend` text COMMENT '用户邀请';");
+
+                    } else if ('SQLite' == $type) {
+                        $db->query("ALTER TABLE `".$prefix."users` ADD `location` VARCHAR( 120 )  DEFAULT '';");
+                        $db->query("ALTER TABLE `".$prefix."users` ADD `credits` int(10) unsigned   DEFAULT 0 ;");
+                        $db->query("ALTER TABLE `".$prefix."users` ADD `level` int(2) unsigned   DEFAULT 1;");
+                        $db->query("ALTER TABLE `".$prefix."users` ADD `extend` text ;");
+                    } else {
+                        throw new Typecho_Plugin_Exception('不支持的数据库类型：'.$type);
+                    }
+                    return '插件启用成功';
+                } catch (Typecho_Db_Exception $e) {
+                    $code = $e->getCode();
+                    if(('Mysql' == $type && 1060 == $code) ) {
+                        return '插件启用成功';
+                    }
+                    throw new Typecho_Plugin_Exception('插件启用失败。错误号：'.$code);
+                }
+            }
+            throw new Typecho_Plugin_Exception('数据表检测失败，插件启用失败。错误号：'.$code);
+        }
+    }
+    // 添加 typecho_creditslog
+    public static function typecho_TableInstall(){
+        // create circle follow table
+        $db = Typecho_Db::get();
+        $prefix = $db->getPrefix();
+        $type = explode('_', $db->getAdapterName());
+        $type = array_pop($type);
+        if($type == "SQLite"){
+            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."creditslog` (
+                                  `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                                  `uid` int(10) unsigned NOT NULL,
+                                  `srcId` int(10) unsigned NOT NULL,
+                                  `created` int(10) unsigned NOT NULL DEFAULT '0',
+                                  `type` char(16) NOT NULL DEFAULT 'login',
+                                  `amount` int(10) NOT NULL DEFAULT '0',
+                                  `balance` int(10) unsigned NOT NULL DEFAULT '0',
+                                  `remark` varchar(255) NOT NULL DEFAULT '',
+                                );");
+            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."typecho_messages` (
+                                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                                `uid` int(10) unsigned NOT NULL ,
+                                `type` char(16) NOT NULL DEFAULT 'comment' ,
+                                `srcId` int(10) unsigned NOT NULL DEFAULT '0' ,
+                                `created` int(10) unsigned NOT NULL DEFAULT '0' ,
+                                `status` tinyint(1) unsigned NOT NULL DEFAULT '0',
+                                );");
+            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."typecho_favorites` (
+                                `fid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,
+                                `uid` int(10) unsigned NOT NULL,
+                                `type` char(16) NOT NULL DEFAULT 'post' ,
+                                `srcId` int(10) unsigned NOT NULL DEFAULT '0',
+                                `created` int(10) unsigned NOT NULL DEFAULT '0',
+                                );");
+        }else{
+            $res= $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."creditslog` (
+                                  `id` int(10) unsigned NOT NULL auto_increment COMMENT '积分日志表主键',
+                                  `uid` int(10) unsigned NOT NULL COMMENT '所属用户',
+                                  `srcId` int(10) unsigned NOT NULL COMMENT '触发的资源ID',
+                                  `created` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
+                                  `type` char(16) NOT NULL DEFAULT 'login' COMMENT '积分类型',
+                                  `amount` int(10) NOT NULL DEFAULT '0' COMMENT '本次积分',
+                                  `balance` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '余额',
+                                  `remark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+                                  PRIMARY KEY (`id`)
+                                );");
+            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."messages` (
+                                `id` int(10) unsigned NOT NULL auto_increment COMMENT '提醒表主键',
+                                `uid` int(10) unsigned NOT NULL COMMENT '提醒的用户',
+                                `type` char(16) NOT NULL DEFAULT 'comment' COMMENT '提醒类型',
+                                `srcId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '触发的资源',
+                                `created` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '触发时间',
+                                `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否已读',
+                                PRIMARY KEY (`id`),
+                                KEY `uid` (`uid`)
+                                ) ;");
+            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."favorites` (
+                                `fid` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '收藏主键',
+                                `uid` int(10) unsigned NOT NULL COMMENT '所属用户',
+                                `type` char(16) NOT NULL DEFAULT 'post' COMMENT '收藏类型',
+                                `srcId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '资源ID',
+                                `created` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '收藏时间',
+                                PRIMARY KEY (`fid`)
+                                );");
+        }
+
+
+    }
     // 添加文章额外字段
     public static function contentsSqlInstall()
     {
@@ -714,15 +841,19 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
     }
 
     public static function handle($type,$archive,$select){
-        $fp = fopen('write.txt', 'a+b'); //a+读写方式打开，将文件指针指向文件末尾。b为强制使用二进制模式. 如果文件不存在则尝试创建之。
-        fwrite($fp,print_r("-handle:".$type."--".$archive->parameter."--".$archive->request->metatag."--\r\n",true));
-        fclose($fp); //关闭打开的文件。
+//        $fp = fopen('write.txt', 'a+b'); //a+读写方式打开，将文件指针指向文件末尾。b为强制使用二进制模式. 如果文件不存在则尝试创建之。
+//        fwrite($fp,print_r("-handle:".$type."--".$archive->parameter."--".$archive->request->metatag."--\r\n",true));
+//        fclose($fp); //关闭打开的文件。
         if ($type == 'metas'){
             Widget_Metasmanage::handle($archive);
         }elseif ($type == 'neighbor' or $type == 'neighbor_page'){
             Widget_Neighbor::handle($archive,$select);
         }elseif ($type == 'myblog' or $type == 'myblog_page'){
             Widget_blog::handle($archive,$select);
+        }elseif ($type == 'setting'){
+            Widget_usercenter::handleSetting($archive,$select);
+        }elseif ($type == 'credits'){
+            Widget_usercenter::handleCredits($archive,$select);
         }
 
         return true; // 不输出文章 // 查看源码
@@ -797,6 +928,18 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
 
         return $returnHtml;
     }
-
+    /**
+     * 积分
+     */
+    public static function loginSucceed($user, $name, $password, $remember){
+        $type = 'login';
+        if($user->have()){
+            $uid=null;$srcId = null;
+            Typecho_Widget::widget('Widget_Users_Credits')->setUserCredits($user->uid,$type,$srcId);
+        }
+    }
+    public static function finishComment($archive){
+        Widget_Common::credits('reply',null,$archive->coid);
+    }
 }
 
