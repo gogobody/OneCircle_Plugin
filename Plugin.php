@@ -698,8 +698,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
 
                     } else if ('SQLite' == $type) {
                         $db->query("ALTER TABLE `".$prefix."users` ADD `location` VARCHAR( 120 )  DEFAULT '';");
-                        $db->query("ALTER TABLE `".$prefix."users` ADD `credits` int(10) unsigned   DEFAULT 0 ;");
-                        $db->query("ALTER TABLE `".$prefix."users` ADD `level` int(2) unsigned   DEFAULT 1;");
+                        $db->query("ALTER TABLE `".$prefix."users` ADD `credits` int(10)  DEFAULT 0 ;");
+                        $db->query("ALTER TABLE `".$prefix."users` ADD `level` int(2)  DEFAULT 1;");
                         $db->query("ALTER TABLE `".$prefix."users` ADD `extend` text ;");
                     } else {
                         throw new Typecho_Plugin_Exception('不支持的数据库类型：'.$type);
@@ -726,28 +726,28 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         if($type == "SQLite"){
             $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."creditslog` (
                                   `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                                  `uid` int(10) unsigned NOT NULL,
-                                  `srcId` int(10) unsigned NOT NULL,
-                                  `created` int(10) unsigned NOT NULL DEFAULT '0',
+                                  `uid` int(10) NOT NULL,
+                                  `srcId` int(10) NOT NULL,
+                                  `created` int(10) NOT NULL DEFAULT '0',
                                   `type` char(16) NOT NULL DEFAULT 'login',
                                   `amount` int(10) NOT NULL DEFAULT '0',
-                                  `balance` int(10) unsigned NOT NULL DEFAULT '0',
+                                  `balance` int(10) NOT NULL DEFAULT '0',
                                   `remark` varchar(255) NOT NULL DEFAULT '',
                                 );");
             $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."typecho_messages` (
                                 `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                                `uid` int(10) unsigned NOT NULL ,
+                                `uid` int(10) NOT NULL ,
                                 `type` char(16) NOT NULL DEFAULT 'comment' ,
-                                `srcId` int(10) unsigned NOT NULL DEFAULT '0' ,
-                                `created` int(10) unsigned NOT NULL DEFAULT '0' ,
-                                `status` tinyint(1) unsigned NOT NULL DEFAULT '0',
+                                `srcId` int(10) NOT NULL DEFAULT '0' ,
+                                `created` int(10) NOT NULL DEFAULT '0' ,
+                                `status` tinyint(1) NOT NULL DEFAULT '0',
                                 );");
             $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."typecho_favorites` (
                                 `fid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,
-                                `uid` int(10) unsigned NOT NULL,
+                                `uid` int(10) NOT NULL,
                                 `type` char(16) NOT NULL DEFAULT 'post' ,
-                                `srcId` int(10) unsigned NOT NULL DEFAULT '0',
-                                `created` int(10) unsigned NOT NULL DEFAULT '0',
+                                `srcId` int(10) NOT NULL DEFAULT '0',
+                                `created` int(10) NOT NULL DEFAULT '0',
                                 );");
         }else{
             $res= $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."creditslog` (
