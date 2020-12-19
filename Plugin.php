@@ -732,7 +732,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
                                   `type` char(16) NOT NULL DEFAULT 'login',
                                   `amount` int(10) NOT NULL DEFAULT '0',
                                   `balance` int(10) NOT NULL DEFAULT '0',
-                                  `remark` varchar(255) NOT NULL DEFAULT '',
+                                  `remark` varchar(255) NOT NULL DEFAULT ''
                                 );");
             $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."typecho_messages` (
                                 `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -740,14 +740,14 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
                                 `type` char(16) NOT NULL DEFAULT 'comment' ,
                                 `srcId` int(10) NOT NULL DEFAULT '0' ,
                                 `created` int(10) NOT NULL DEFAULT '0' ,
-                                `status` tinyint(1) NOT NULL DEFAULT '0',
+                                `status` tinyint(1) NOT NULL DEFAULT '0'
                                 );");
             $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."typecho_favorites` (
                                 `fid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,
                                 `uid` int(10) NOT NULL,
                                 `type` char(16) NOT NULL DEFAULT 'post' ,
                                 `srcId` int(10) NOT NULL DEFAULT '0',
-                                `created` int(10) NOT NULL DEFAULT '0',
+                                `created` int(10) NOT NULL DEFAULT '0'
                                 );");
         }else{
             $res= $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."creditslog` (
