@@ -56,7 +56,10 @@ class Widget_Users_Credits extends Widget_Abstract_Credits
     }
 
     public function setUserCredits($uid,$type,$srcId){
+        var_dump('aaa');
         $creditsName = 'credits'.ucfirst($type);
+        var_dump($creditsName);
+
         if(!$this->options->$creditsName){
             return;
         }
