@@ -6,7 +6,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 加入了权限设置：修改注册时默认用户组，贡献者可直接发布文章无需审核,前台注册支持用户输入密码<br>
  * @package OneCircle
  * @author gogobody
- * @version 4.0
+ * @version 4.1
  * @link https://one.ijkxs.com
  */
 
