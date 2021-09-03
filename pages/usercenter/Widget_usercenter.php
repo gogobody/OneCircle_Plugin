@@ -34,7 +34,9 @@ class Widget_usercenter extends Widget_Archive
     }
     public static function handleCredits($archive, $select)
     {
-        $archive->notLoginRedirect();
+        if (!$archive->user->hasLogin()){
+            $archive->response->redirect($archive->options->loginUrl);
+        }
         $archive->setArchiveType('credits');
         $archive->setArchiveType($archive->parameter->type);
         $archive->setMetaTitle('账户积分');

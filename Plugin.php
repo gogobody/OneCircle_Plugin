@@ -6,23 +6,33 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 加入了权限设置：修改注册时默认用户组，贡献者可直接发布文章无需审核,前台注册支持用户输入密码<br>
  * @package OneCircle
  * @author gogobody
- * @version 2.0.0
- * @link https://blog.gogobody.cn
+ * @version 4.0
+ * @link https://one.ijkxs.com
  */
 
 require(__DIR__ . DIRECTORY_SEPARATOR . "Action.php");
+// require abstrace
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Abstract/Credits.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Abstract/Notice.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Abstract/Message.php");
+
+// require handler
 require_once 'pages/metas/Metasmanage.php';
 require_once 'pages/neighbor/Widget_Neighbor.php';
 require_once 'pages/blog/Widget_blog.php';
 require_once 'pages/usercenter/Widget_usercenter.php';
+require_once 'pages/notices/Widget_notices.php';
+require_once 'pages/messages/Widget_messages.php';
 
+// require widget
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "manage/Widget_CateTag_Edit.php");
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/upload.php");
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Credits.php");
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Common.php");
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Users/Query.php");
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Credits/List.php");
-require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Abstract/Credits.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Notices/List.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Messages/List.php");
 
 
 class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interface
@@ -75,6 +85,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Helper::addRoute('myblog_page', '/myblog/[page:digital]/', 'Widget_Archive@myblog_page', 'render');
         Helper::addRoute('setting', '/usercenter/setting', 'Widget_Archive@usercenter_settiing', 'render');
         Helper::addRoute('credits', '/usercenter/credits', 'Widget_Archive@usercenter_credits', 'render');
+        Helper::addRoute('notice', '/usercenter/notice', 'Widget_Archive@notice', 'render');
+        Helper::addRoute('messages', '/usercenter/messages', 'Widget_Archive@messages', 'render');
 
         // 页面注册
         Typecho_Plugin::factory('Widget_Archive')->handleInit_1000 = array('OneCircle_Plugin','handleInit');
@@ -112,6 +124,10 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         OneCircle_Plugin::contentsSqlInstall();
         OneCircle_Plugin::typecho_TableInstall();
         OneCircle_Plugin::userExtendsqlInstall();
+        // 2021/9/1 添加消息
+        //
+
+
         // register apis
         // action method url : /action/oneapi
 //        Helper::addAction('oneapi', 'OneCircle_Action');
@@ -234,7 +250,9 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
 //            $res['userSign'] = '太懒了还没有个性签名';
 //            $tags['userTag'] = '学生,重庆';
 //        }
-        $useravatar = new Typecho_Widget_Helper_Form_Element_Text('userAvatar', NULL, null, _t('个人头像'));
+        $useravatar = new Typecho_Widget_Helper_Form_Element_Text('userAvatar', NULL, null, _t('个人头像'),
+        '<div id="avatar-uploader" style="width: 100%;text-align: right;flex-direction: row-reverse;display: none"><div class="row XCHRv" style="width: 100%;display: block"><div id="zz-img-show"></div><div class="zz-add-img "><input id="zz-img-file" type="file" accept="image/*" multiple="multiple"><button id="zz-img-add" type="button"><span class="chevereto-pup-button-icon"><svg class="chevereto-pup-button-icon" xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M76.7 87.5c12.8 0 23.3-13.3 23.3-29.4 0-13.6-5.2-25.7-15.4-27.5 0 0-3.5-0.7-5.6 1.7 0 0 0.6 9.4-2.9 12.6 0 0 8.7-32.4-23.7-32.4 -29.3 0-22.5 34.5-22.5 34.5 -5-6.4-0.6-19.6-0.6-19.6 -2.5-2.6-6.1-2.5-6.1-2.5C10.9 25 0 39.1 0 54.6c0 15.5 9.3 32.7 29.3 32.7 2 0 6.4 0 11.7 0V68.5h-13l22-22 22 22H59v18.8C68.6 87.4 76.7 87.5 76.7 87.5z" style="fill: currentcolor;"></path></svg></span><span class="chevereto-pup-button-text">上传</span></button></div></div></div>');
+        $useravatar->setAttribute("id","personal-userAvatar");
         $form->addInput($useravatar);
 
         $userbackimg = new Typecho_Widget_Helper_Form_Element_Text('userBackImg', NULL, null, _t('背景图片'));
@@ -734,15 +752,30 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
                                   `balance` int(10) NOT NULL DEFAULT '0',
                                   `remark` varchar(255) NOT NULL DEFAULT ''
                                 );");
-            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."typecho_messages` (
+            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."onemessages` (
+                                `id` int(10) unsigned NOT NULL auto_increment,
+                                `uid` int(10) unsigned NOT NULL ,
+                                `fid` int(10) unsigned NOT NULL ,
+                                `type` char(16) NOT NULL DEFAULT 'message' ,
+                                `text` TEXT NOT NULL ,
+                                `created` int(10) unsigned NOT NULL DEFAULT '0' ,
+                                `status` tinyint(1) unsigned NOT NULL DEFAULT '0' ,
+                                PRIMARY KEY (`id`),
+                                KEY `uid` (`uid`)
+                                ) ;");
+            // 删除旧的 message 表
+            $db->query("DROP TABLE IF EXISTS `" . $prefix ."messages`;");
+
+            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."notices` (
                                 `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                                 `uid` int(10) NOT NULL ,
                                 `type` char(16) NOT NULL DEFAULT 'comment' ,
                                 `srcId` int(10) NOT NULL DEFAULT '0' ,
                                 `created` int(10) NOT NULL DEFAULT '0' ,
+                                `text` varchar(700) NOT NULL DEFAULT '',
                                 `status` tinyint(1) NOT NULL DEFAULT '0'
                                 );");
-            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."typecho_favorites` (
+            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."favorites` (
                                 `fid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,
                                 `uid` int(10) NOT NULL,
                                 `type` char(16) NOT NULL DEFAULT 'post' ,
@@ -761,12 +794,27 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
                                   `remark` varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
                                   PRIMARY KEY (`id`)
                                 );");
-            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."messages` (
+            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."onemessages` (
+                                `id` int(10) unsigned NOT NULL auto_increment COMMENT '消息表主键',
+                                `uid` int(10) unsigned NOT NULL COMMENT '谁的消息',
+                                `fid` int(10) unsigned NOT NULL COMMENT '谁发来的',
+                                `type` char(16) NOT NULL DEFAULT 'message' COMMENT '消息类型',
+                                `text` TEXT NOT NULL COMMENT '消息内容',
+                                `created` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '触发时间',
+                                `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否已读',
+                                PRIMARY KEY (`id`),
+                                KEY `uid` (`uid`)
+                                ) ;");
+            // 删除旧的 message 表
+            $db->query("DROP TABLE IF EXISTS `" . $prefix ."messages`;");
+
+            $db->query("CREATE TABLE IF NOT EXISTS `" . $prefix ."notices` (
                                 `id` int(10) unsigned NOT NULL auto_increment COMMENT '提醒表主键',
                                 `uid` int(10) unsigned NOT NULL COMMENT '提醒的用户',
-                                `type` char(16) NOT NULL DEFAULT 'comment' COMMENT '提醒类型',
+                                `type` char(16) NOT NULL DEFAULT 'comment' COMMENT '提醒类型', 
                                 `srcId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '触发的资源',
                                 `created` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '触发时间',
+                                `text` varchar(700) NOT NULL DEFAULT '' COMMENT '详情',
                                 `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否已读',
                                 PRIMARY KEY (`id`),
                                 KEY `uid` (`uid`)
@@ -844,6 +892,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
 //        $fp = fopen('write.txt', 'a+b'); //a+读写方式打开，将文件指针指向文件末尾。b为强制使用二进制模式. 如果文件不存在则尝试创建之。
 //        fwrite($fp,print_r("-handle:".$type."--".$archive->parameter."--".$archive->request->metatag."--\r\n",true));
 //        fclose($fp); //关闭打开的文件。
+
         if ($type == 'metas'){
             Widget_Metasmanage::handle($archive);
         }elseif ($type == 'neighbor' or $type == 'neighbor_page'){
@@ -854,6 +903,10 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
             Widget_usercenter::handleSetting($archive,$select);
         }elseif ($type == 'credits'){
             Widget_usercenter::handleCredits($archive,$select);
+        }elseif ($type == 'notice'){
+            Widget_notices::noticeHandle($archive, $select);
+        }elseif ($type == 'messages'){
+            Widget_messages::messageHandle($archive, $select);
         }
 
         return true; // 不输出文章 // 查看源码
