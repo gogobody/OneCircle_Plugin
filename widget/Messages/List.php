@@ -79,7 +79,7 @@ class Widget_Message_Archive extends Widget_Abstract_Messages {
             $prefix = $this->db->getPrefix();
 
             $select = $this->db->select()
-                ->from('table.onemessages')->join('(select max(id) id,fid fid2 from '.$prefix.'onemessages where fid='.$this->user->uid.
+                ->from('table.onemessages')->join('(select max(id) id,fid fid2 from '.$prefix.'onemessages where fid='.$this->user->uid.' or uid='.$this->user->uid.
                     ' group by fid2) t2','table.onemessages.id=t2.id');
 //            $select = 'select * from '.$prefix.'onemessages t1 join (select max(id) id,fid from '.$prefix.'onemessages group by fid) t2 where t1.id=t2.id';
         }else{
