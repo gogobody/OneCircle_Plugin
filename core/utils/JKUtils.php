@@ -21,20 +21,14 @@ function PluginUrl($str_ = null,$ret = false){
 function get_plugins_info(){
     $plugin_name = 'OneCircle'; //改成你的插件名
     Typecho_Widget::widget('Widget_Plugins_List@activated', 'activated=1')->to($activatedPlugins);
-    $activatedPlugins = ((array)$activatedPlugins);
-    $plugins_list = $activatedPlugins["\0*\0stack"];
-    $plugins_info = array();
-    for ($i=0;$i<count($plugins_list);$i++){
-        if($plugins_list[$i]['title'] == $plugin_name){
-            $plugins_info = $plugins_list[$i];
-            break;
+    if ($activatedPlugins->have() || !empty($activatedPlugins->activatedPlugins)){
+        while ($activatedPlugins->next()){
+            if ($activatedPlugins->title == $plugin_name){
+                return $activatedPlugins->version;
+            }
         }
     }
-    if(count($plugins_info)<1){
-        return false;
-    }else{
-        return trim($plugins_info['version']);
-    }
+    return false;
 }
 
 class JKUtils
