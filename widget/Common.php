@@ -57,6 +57,7 @@ class Widget_Common
      * @param string $type
      */
     public static function credits($type,$uid=null,$srcId = null){
+
         if($uid){
             $user = Typecho_Widget::widget('Widget_Users_Query@uid_'.$uid,'uid='.$uid);
         }else{

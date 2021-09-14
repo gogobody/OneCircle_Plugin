@@ -121,7 +121,6 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Typecho_Plugin::factory('Widget_Login')->loginSucceed_1000 = array('OneCircle_Plugin', 'loginSucceed');
         Typecho_Plugin::factory('Widget_Feedback')->finishComment_1000 = array('OneCircle_Plugin', 'finishComment');
 
-
         // 添加 关注圈子
         OneCircle_Plugin::userCircleFollowInstall();
 
@@ -1064,7 +1063,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
     public static function loginSucceed($user, $name, $password, $remember){
         $type = 'login';
         if($user->have()){
-            $uid=null;$srcId = null;
+            $srcId = null;
             Typecho_Widget::widget('Widget_Users_Credits')->setUserCredits($user->uid,$type,$srcId);
         }
     }
@@ -1072,7 +1071,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Widget_Common::credits('reply',null,$archive->coid);
     }
 
-        /**
+
+    /**
      * 自动输出摘要
      * @access public
      * @return string

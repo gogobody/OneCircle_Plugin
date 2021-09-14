@@ -58,7 +58,7 @@ class Widget_User_Credits extends Widget_Abstract_Credit
 
     public function setUserCredits($uid,$type,$srcId){
         $creditsName = 'credits'.ucfirst($type);
-        $poption = Helper::options()->plugin('OneCircle');
+        $poption = Helper::options();
 
         if ($type=='jifenpay'){
             $db = Typecho_Db::get();
