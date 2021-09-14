@@ -6,10 +6,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 // +----------------------------------------------------------------------
 
 
-class Widget_Abstract_Credits extends Widget_Abstract{
+class Widget_Abstract_Credit extends Widget_Abstract{
+    public function __construct($request, $response, $params = NULL)
+    {
+        parent::__construct($request, $response, $params);
+
+    }
     /**
      * 积分的种类
-     * @var unknown
      */
     protected $_creditType=array(
         'register'=>array('title'=>'注册用户','max'=>1),
@@ -18,6 +22,7 @@ class Widget_Abstract_Credits extends Widget_Abstract{
         'reply'=>array('title'=>'发表回复','max'=>0),
         'invite'=>array('title'=>'通过邀请注册','max'=>1),
         'inviter'=>array('title'=>'邀请用户注册','max'=>10),
+        'jifenpay'=>array('title'=>'积分阅读','max'=>3000),
     );
 
     /**
@@ -43,7 +48,12 @@ class Widget_Abstract_Credits extends Widget_Abstract{
         $value['date'] = new Typecho_Date($value['created']);
         $value['name'] = $this->_creditType[$value['type']]['title'];
         $r = $value['amount']>0 ? '奖励' : '扣除';
-        $value['remark'] = $this->_creditType[$value['type']]['title'].' '.$r;
+        $link = '';
+        if ($value['type'] == 'jifenpay'){
+            Typecho_Widget::widget('Widget_Archive@tmp_', 'pageSize=1&type=post', 'cid='.$value['srcId'])->to($post);
+            $link = '<a href="'.$post->permalink.'">'.substr($post->title,0,22).'...</a>';
+        }
+        $value['remark'] = $this->_creditType[$value['type']]['title'].' '.$link.$r;
         $value['amount'] = abs($value['amount']);
         return $value;
     }
@@ -54,7 +64,7 @@ class Widget_Abstract_Credits extends Widget_Abstract{
      * @param array $value 每行的值
      * @return array
      */
-    public function push(array $value)
+    public function push(array $value): array
     {
         $value = $this->filter($value);
         return parent::push($value);
@@ -63,7 +73,7 @@ class Widget_Abstract_Credits extends Widget_Abstract{
     /* (non-PHPdoc)
      * @see Widget_Abstract::select()
      */
-    public function select()
+    public function select(): Typecho_Db_Query
     {
         return $this->db->select()->from('table.creditslog');
 

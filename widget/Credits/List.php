@@ -5,7 +5,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 // | 用户积分
 
 
-class Widget_Credits_List extends Widget_Abstract_Credits
+class Widget_Credits_List extends Widget_Abstract_Credit
 {
     
     /**

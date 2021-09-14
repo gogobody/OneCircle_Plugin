@@ -6,11 +6,14 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 加入了权限设置：修改注册时默认用户组，贡献者可直接发布文章无需审核,前台注册支持用户输入密码<br>
  * @package OneCircle
  * @author gogobody
- * @version 4.1
+ * @version 4.5
  * @link https://one.ijkxs.com
  */
 
 require(__DIR__ . DIRECTORY_SEPARATOR . "Action.php");
+require_once 'core/utils/JKUtils.php';
+require_once 'core/handler/handler.php';
+
 // require abstrace
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Abstract/Credits.php");
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Abstract/Notice.php");
@@ -35,8 +38,12 @@ require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Notices/List.php");
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Messages/List.php");
 
 
+
 class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interface
 {
+    // 默认加密首尾标签对 // 不要修改
+    protected static $pluginNodeStart = '<!--jkhelper start-->';
+    protected static $pluginNodeEnd = '<!--jkhelper end-->';
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
      *
@@ -87,6 +94,14 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Helper::addRoute('credits', '/usercenter/credits', 'Widget_Archive@usercenter_credits', 'render');
         Helper::addRoute('notice', '/usercenter/notice', 'Widget_Archive@notice', 'render');
         Helper::addRoute('messages', '/usercenter/messages', 'Widget_Archive@messages', 'render');
+        // 路由注册
+
+        // 资源专区
+        Helper::addRoute('resources', '/resources', 'Widget_Archive@resources', 'render');
+        Helper::addRoute('resources_page', '/resources/[page:digital]/', 'Widget_Archive@resources_page', 'render');
+        // 热门文章
+        Helper::addRoute('hotposts', '/hot/posts', 'Widget_Archive@hotposts', 'render');
+        Helper::addRoute('hotposts_page', '/hot/posts/[page:digital]/', 'Widget_Archive@hotposts_page', 'render');
 
         // 页面注册
         Typecho_Plugin::factory('Widget_Archive')->handleInit_1000 = array('OneCircle_Plugin','handleInit');
@@ -127,12 +142,17 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         // 2021/9/1 添加消息
         //
 
-
+        // 积分阅读
+        Typecho_Plugin::factory('Widget_Abstract_Contents')->contentEx_1001 = array(__CLASS__, 'contentEx');
+        Typecho_Plugin::factory('Widget_Abstract_Contents')->excerptEx_1001 = array(__CLASS__, 'excerptEx');
+        Typecho_Plugin::factory('admin/write-post.php')->bottom = array(__CLASS__, 'writeRender');
+        Typecho_Plugin::factory('admin/write-page.php')->bottom = array(__CLASS__, 'writeRender');
         // register apis
+        Helper::addRoute('jsonp_', '/jkhelper/[type]', 'OneCircle_Action');
         // action method url : /action/oneapi
 //        Helper::addAction('oneapi', 'OneCircle_Action');
         // route method url : /oneaction
-
+        // /action/whosurdaddy
         Helper::addRoute("one_action", "/oneaction", "OneCircle_Action", 'route');
 
 
@@ -157,6 +177,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Helper::removeRoute('myblog_page');
         Helper::removeRoute('setting');
         Helper::removeRoute('credits');
+        Helper::removeRoute('jsonp_');
 
         Helper::removePanel(3, 'OneCircle/manage/manage-cat-tags.php');
     }
@@ -170,7 +191,26 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
      */
     public static function config(Typecho_Widget_Helper_Form $form)
     {
-
+        $options = Helper::options();
+        $pluginV = get_plugins_info();
+        ?>
+        <div class="j-setting-contain">
+        <link href="<?php echo $options->themeUrl('/assets/admin/css/one.setting.min.css','onecircle') ?>" rel="stylesheet" type="text/css" />
+        <div>
+            <div class="j-aside">
+                <div class="logo">ONE <?php echo $pluginV ?><br><small style="font-size: 10px"></small></div>
+                <ul class="j-setting-tab">
+                    <li data-current="j-setting-global">公共设置</li>
+                    <li data-current="j-setting-qrcode">二维码设置</li>
+                    <li data-current="j-setting-resource">资源设置</li>
+                </ul>
+                <?php require_once('Backups.php'); ?>
+            </div>
+        </div>
+        <span id="j-version" style="display: none;"><?php echo $pluginV; ?></span>
+        <div class="j-setting-notice"><iframe src="https://www.yuque.com/docs/share/05f40cac-980f-4e53-8b92-ed9728b8dc50?# 《OneCircle 主题说明》" frameborder="no" scrolling="yes" height="100%" width="100%"></iframe></div>
+        <script src="<?php echo $options->themeUrl('/assets/admin/js/one.setting.min.js','onecircle')?>"></script>
+    <?php
         /** 分类名称 */
 //        $name = new Typecho_Widget_Helper_Form_Element_Text('word', NULL, 'Hello World', _t('说点什么'));
 //        $form->addInput($name);
@@ -181,6 +221,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
             'editor' => _t('编辑'),
             'administrator' => _t('管理员')
         ), 'contributor', _t('注册用户默认用户组设置'), _t('<p class="description">不同的用户组拥有不同的权限，具体的权限分配表请<a href="http://docs.typecho.org/develop/acl" target="_blank" rel="noopener noreferrer">参考这里</a>.</p>'));
+        $yonghuzu->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($yonghuzu);
 
         $tuozhan = new Typecho_Widget_Helper_Form_Element_Checkbox('tuozhan',
@@ -188,6 +229,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
                 'register-nb' => _t('勾选该选项后台注册功能将可以直接设置注册密码'),
             ),
             array('contributor-nb','register-nb'), _t('拓展设置'), _t(''));
+        $tuozhan->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($tuozhan->multiMode());
 
         //
@@ -197,21 +239,26 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         if (!empty($row)) $umid = $row['mid'];
         else $umid = 1;
         $registeruserMid = new Typecho_Widget_Helper_Form_Element_Text('registeruserMid', NULL, _t($umid), _t('用户注册后默认关注哪个分类（int）'));
+        $registeruserMid->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($registeruserMid);
 
         $focususerMid = new Typecho_Widget_Helper_Form_Element_Text('focususerMid', NULL, 1, _t('发布关注消息到哪个分类（int）'));
+        $focususerMid->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($focususerMid);
 
         $amapJsKey= new Typecho_Widget_Helper_Form_Element_Text('amapJsKey', NULL, '', _t('高德地图 Web端(JS API) key'));
+        $amapJsKey->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($amapJsKey);
 
         $amapWebKey= new Typecho_Widget_Helper_Form_Element_Text('amapWebKey', NULL, '', _t('高德地图 Web服务 key'));
+        $amapWebKey->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($amapWebKey);
 
         $allowNoneAdminUpload = new Typecho_Widget_Helper_Form_Element_Radio('allowNoneAdminUpload',array(
                 1 => _t('允许'),
                 0 => _t('不允许')
         ),0,_t('是否允许非管理员后台上传文件'),_t('此设置仅针对于后台文章编辑有效'));
+        $allowNoneAdminUpload->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($allowNoneAdminUpload);
 
         $options = Helper::options();
@@ -220,11 +267,39 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
 
         //支付宝二维码
         $AlipayPic = new Typecho_Widget_Helper_Form_Element_Text('AlipayPic', NULL, _t($alipay), _t('支付宝二维码'), _t('打赏中使用的支付宝二维码,建议尺寸小于250×250,且为正方形'));
+        $AlipayPic->setAttribute('class', 'j-setting-content j-setting-qrcode');
         $form->addInput($AlipayPic);
         //微信二维码
         $WechatPic = new Typecho_Widget_Helper_Form_Element_Text('WechatPic', NULL, _t($wxpay), _t('微信二维码'), _t('打赏中使用的微信二维码,建议尺寸小于250×250,且为正方形'));
+        $WechatPic->setAttribute('class', 'j-setting-content j-setting-qrcode');
         $form->addInput($WechatPic);
 
+        // 资源设置
+        $enableResource = new Typecho_Widget_Helper_Form_Element_Radio('enableResource',array(
+                1 => _t('开启'),
+                0 => _t('关闭')
+        ),1,_t('开启资源页'),_t('是否开启资源页'));
+        $enableResource->setAttribute('class', 'j-setting-content j-setting-resource');
+        $form->addInput($enableResource);
+
+        $JResourceCatags = new Typecho_Widget_Helper_Form_Element_Textarea(
+            'JResourceCatags',
+            null,
+            '','资源页面展示的分类和tag',
+            '说明：这里展示分类和 tag 的对应关系，<br>格式：<br>分类1的mid||tag1的mid,tag2的mid<br>比如：1||11，13每行一个'
+        );
+        $JResourceCatags->setAttribute('class', 'j-setting-content j-setting-resource');
+        $form->addInput($JResourceCatags);
+
+        $JPageStatus = new Typecho_Widget_Helper_Form_Element_Select(
+            'JPageStatus',
+            array('default' => '按钮切换形式（默认）', 'ajax' => '点击加载形式'),
+            'default',
+            '选择首页的分页形式',
+            '介绍：选择一款您所喜欢的分页形式'
+        );
+        $JPageStatus->setAttribute('class', 'j-setting-content j-setting-resource');
+        $form->addInput($JPageStatus->multiMode());
     }
 
     /**
@@ -880,18 +955,16 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
     }
     // 添加新的 Page
     public static function handleInit($archive,$select){
+
+
+
 //        $fp = fopen('write.txt', 'a+b'); //a+读写方式打开，将文件指针指向文件末尾。b为强制使用二进制模式. 如果文件不存在则尝试创建之。
-//        fwrite($fp,print_r("-handleInit:".$archive->parameter."--\r\n",true));
+//        fwrite($fp,print_r($archive->parameter->type."--\r\n",true));
+//        fwrite($fp,print_r(Helper::options()->JIndexShowPage."--\r\n",true));
 //        fclose($fp); //关闭打开的文件。
-
-//        $archive->setThemeFile('metamanage.php');
-
     }
 
     public static function handle($type,$archive,$select){
-//        $fp = fopen('write.txt', 'a+b'); //a+读写方式打开，将文件指针指向文件末尾。b为强制使用二进制模式. 如果文件不存在则尝试创建之。
-//        fwrite($fp,print_r("-handle:".$type."--".$archive->parameter."--".$archive->request->metatag."--\r\n",true));
-//        fclose($fp); //关闭打开的文件。
 
         if ($type == 'metas'){
             Widget_Metasmanage::handle($archive);
@@ -907,6 +980,10 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
             Widget_notices::noticeHandle($archive, $select);
         }elseif ($type == 'messages'){
             Widget_messages::messageHandle($archive, $select);
+        }elseif($type == 'resources' or $type == 'resources_page'){
+            Widget_CustomHandler::handleResourcesPage($archive, $select);
+        }elseif($type == 'hotposts' or $type == 'hotposts_page'){
+            Widget_CustomHandler::handleHotPostsPage($archive, $select);
         }
 
         return true; // 不输出文章 // 查看源码
@@ -993,6 +1070,122 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
     }
     public static function finishComment($archive){
         Widget_Common::credits('reply',null,$archive->coid);
+    }
+
+        /**
+     * 自动输出摘要
+     * @access public
+     * @return string
+     */
+    public static function excerptEx($html, $widget, $lastResult){
+        $JKHRule='/<!--jkhelper start-->([\s\S]*?)<!--jkhelper end-->/i';
+        preg_match_all($JKHRule, $html, $hide_words);
+        if(!$hide_words[0]){
+            $JKHRule='/&lt;!--jkhelper start--&gt;([\s\S]*?)&lt;!--jkhelper end--&gt;/i';
+        }
+        $html=trim($html);
+        if (preg_match_all($JKHRule, $html, $hide_words)){
+            $html = str_replace($hide_words[0], '', $html);
+        }
+        $html=Typecho_Common::subStr(strip_tags($html), 0, 140, "...");
+        return $html;
+    }
+
+    /**
+     * 自动输出内容
+     * @access public
+     * @return string
+     */
+    public static function contentEx($html, $widget, $lastResult){
+        $JKHRule='/<!--jkhelper start-->([\s\S]*?)<!--jkhelper end-->/i';
+        preg_match_all($JKHRule, $html, $hide_words);
+        if(!$hide_words[0]){
+            $JKHRule='/&lt;!--jkhelper start--&gt;([\s\S]*?)&lt;!--jkhelper end--&gt;/i';
+        }
+        $html = empty( $lastResult ) ? $html : $lastResult;
+        $html = trim($html);
+        if (preg_match_all($JKHRule, $html, $hide_content)){
+            if(!empty($hide_content)){
+                $db = Typecho_Db::get();
+
+                //
+                $loginUrl = Helper::options()->loginUrl;
+                $jifenPay = $db->fetchObject($db->select('str_value')->from('table.fields')->where('cid = ? and name = ?',$widget->cid,'jifenPay'))->str_value;
+                $jifenPay = $jifenPay? $jifenPay:0;
+
+                // 获取插件版本号
+                $pluginV = get_plugins_info();
+                // 全局 已获得阅读权限输出
+                $showRes = '<link rel="stylesheet" href="/usr/themes/onecircle/assets/css/jifenpay.min.css?v='.$pluginV.'" type="text/css">
+<div class="jkhelperpost"><span class="jkhelper_content">'.$hide_content[1][0].'</span><span class="jkhelper_top_left"><span>您已获得阅读权限</span></span><span class="jkhelper_top_right"><img src="/usr/plugins/OneCircle/assets/img/icon.png" nogallery="nogallery" no-zoom="true" data-url="/usr/plugins/OneCircle/assets/img/icon.png" class="scrollLoading"></span></div>';
+                // 积分为 0 直接可见
+                if ($jifenPay==0){
+                    $html = str_replace_first($hide_content[0][0]?$hide_content[0][0]:$hide_content[0], $showRes, $html);
+                    return $html;
+                }
+                // 积分不为 0
+                if ($widget->user->hasLogin()){
+                    // 检查是否已经支付过积分
+                    $obj = $db->fetchObject($db->select('id')->from('table.creditslog')->where('uid = ? and srcId = ? and type = ?',$widget->user->uid,$widget->cid,'jifenpay'));
+                    if(!empty((array)$obj)) $id=$obj->id;
+                    if (!empty($id)){
+                        $html = str_replace_first($hide_content[0][0]?$hide_content[0][0]:$hide_content[0], $showRes, $html);
+                        return $html;
+                    }
+
+                    $ustr = '注册用户 LV'. $widget->user->level;
+                    $pstr = '<span>支付积分<b>￥'.$jifenPay.'<i></i></b>以后下载<a onclick="callJifenPay()"> 立即支付</a></span>';
+                }else{
+                    $ustr = '游客';
+                    $pstr = '<span>请先登录<a href="'.$loginUrl.'">登录</a></span>';
+                }
+                /* 积分组件 */
+                $repstr = '<link rel="stylesheet" href="/usr/themes/onecircle/assets/css/jifenpay.min.css?v="'.$pluginV.' type="text/css"><div id="download-box" class="download-box mg-b">
+    <div class="download-list">
+        <div class="download-item box not-allow-down" style="width: 100%;">
+            <div class="download-thumb"
+                 style="background-image: url("");"></div>
+            <div class="download-rights"><h2><span id="i-8">阅读权限</span></h2><span class="mobile-show">查看</span>
+                <ul>
+                    <li class="">
+                        <div><span>VIP用户组</span></div>
+                        <div>免费下载</div></li>
+                    <li class="">
+                        <div><span>普通用户组</span></div>
+                        <div><i class="b2font b2-jifen "></i><span>'.$jifenPay.'</span></div></li>
+                </ul>
+            </div>
+            <div class="download-info"><h2>'.$widget->title.'</h2>
+                <div class="download-current"><span>您当前的等级为</span> <span><span
+                        class="lv-icon user-guest b2-guest"><i></i><b>'.$ustr.'</b></span></span> <span></span>
+                    <div>'.$pstr.'</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>';
+                /* 付费组件 */
+                $paySrc = Helper::options()->rootUrl."/jkhelper/jifenPay?post_id=".$widget->cid;
+                $payWidget = '<link rel="stylesheet" href="/usr/themes/onecircle/assets/css/jifenpay.min.css?v='.$pluginV.'" type="text/css">
+<div id="ds-box" class="ds-box"><div class="modal"><div class="modal-content b2-radius"><div class="pay-box-title"><div class="pay-box-left">
+                                '.$widget->title.'
+</div><div class="pay-box-right"><span class="pay-close" onclick="callJifenPay()">×</span></div></div><div class="pay-box-content normal"><div class="pay-box-desc">支付积分</div> <div class="ds-price"><p class="ds-current-money"><i>￥</i><span>'.$jifenPay.'</span></p></div></div> <div class="pay-my-money"><span class="b2-radius">您当前的积分剩余￥'.$widget->user->credits.'<a style="display:none;" href="#" target="_blank" class="b2-color">充值余额</a></span> <p style="display: none;">商品价格为0元，请使用余额付款！</p></div> <div class="pay-type"><ul><li><button class="b2-radius" id="yuepay" onclick="yuePay()"><i class="ds-pay-yue">￥</i><span>余额</span></button></li></ul></div> <div class="pay-button"><div><button class="" onclick="jinfenPay(\''.$paySrc.'\')"><span id="chosePay" style="">请选择支付方式</span><span id="payBtn" style="display: none;">支付</span></button></div></div></div></div></div>
+<script src="/usr/themes/onecircle/assets/js/jifenpay.min.js?v='.$pluginV.'"></script>';
+                $repstr = $repstr.$payWidget;
+                $html = str_replace_first($hide_content[0][0]?$hide_content[0][0]:$hide_content[0], $repstr, $html);
+
+            }
+        }
+        return $html;
+    }
+
+    /**
+     * 编辑页插入
+     */
+    public static function writeRender(){
+        $pluginNodeStart = self::$pluginNodeStart;
+        $pluginNodeEnd = self::$pluginNodeEnd;
+
     }
 }
 

@@ -5,8 +5,11 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 // | 用户积分
 // +----------------------------------------------------------------------
 require_once 'Abstract/Credits.php';
-
-class Widget_Users_Credits extends Widget_Abstract_Credits
+function plus_minus_conversion($number = 0)
+{
+    return $number > 0 ? -1 * $number : abs($number);
+}
+class Widget_User_Credits extends Widget_Abstract_Credit
 {
     /**
      * @var int[]
@@ -39,14 +42,12 @@ class Widget_Users_Credits extends Widget_Abstract_Credits
 
     /**
      * 判断是否超出次数
-     * @param unknown $uid
-     * @param unknown $type
      * @return boolean
      */
-    protected function isSetMaxNum($uid,$type){
+    public function isSetMaxNum($uid,$type){
         if($this->_creditType[$type]['max']==0) return true;
         $select = $this->db->select()->where('type = ? AND uid = ?', $type, $uid);
-        if($this->_creditType[$type]['cycle']==1){
+        if(array_key_exists('cycle',$this->_creditType[$type]) and $this->_creditType[$type]['cycle']==1){
             $date = strtotime(date('Y-m-d'));
             $select->where('created > ?',$date);
         }
@@ -57,17 +58,28 @@ class Widget_Users_Credits extends Widget_Abstract_Credits
 
     public function setUserCredits($uid,$type,$srcId){
         $creditsName = 'credits'.ucfirst($type);
+        $poption = Helper::options()->plugin('OneCircle');
 
-        if(!$this->options->$creditsName){
-            return;
+        if ($type=='jifenpay'){
+            $db = Typecho_Db::get();
+            $jifenPay = $db->fetchObject($db->select('str_value')->from('table.fields')->where('cid = ? and name = ?',$srcId,'jifenPay'))->str_value;
+
+            $amount = plus_minus_conversion(intval($jifenPay));
+        }else {
+            if(!$poption->$creditsName){
+                return;
+            }
+            $amount = $poption->$creditsName;
         }
+
+
         $srcId = is_null($srcId) ? 0 : $srcId;
         if($this->isSetMaxNum($uid, $type)){
             $data = array(
                 'uid'=>$uid,
                 'srcId'=>$srcId,
                 'type'=>$type,
-                'amount'=>$this->options->$creditsName,
+                'amount'=>$amount,
                 'created'=>$this->options->gmtTime
             );
             $this->saveCredits($data);
@@ -88,14 +100,14 @@ class Widget_Users_Credits extends Widget_Abstract_Credits
                 'uid'=>$inviter->uid,
                 'srcId'=>$uid,
                 'type'=>'inviter',
-                'amount'=>$this->options->$creditsName,
+                'amount'=>$poption->$creditsName,
                 'created'=>$this->options->gmtTime
             );
             $this->saveCredits($data);
         }
     }
 
-    protected function saveCredits($data = array()){
+    public function saveCredits($data = array()){
         $user = $this->getUserCredits($data['uid']);
         $data['balance'] = $user['credits']+$data['amount'];
         if ($data['balance'] < 0 ) $data['balance'] = 0;
@@ -112,7 +124,7 @@ class Widget_Users_Credits extends Widget_Abstract_Credits
         $this->db->query($this->db->update('table.users')->rows(array('credits'=>$data['balance'],'level' => $newlevel))->where('uid = ?',$data['uid']));
     }
 
-    protected function getUserCredits($uid){
+    public function getUserCredits($uid){
         $user = $this->db->fetchRow($this->db->select('table.users.uid,table.users.credits')
             ->from('table.users')
             ->where('uid = ?', $uid)

@@ -64,7 +64,8 @@ class Widget_Common
         }
 
         if($user->have()){
-            Typecho_Widget::widget('Widget_Users_Credits')->setUserCredits($user->uid,$type,$srcId);
+            $credit = Typecho_Widget::widget('Widget_User_Credits');
+            $credit->setUserCredits($user->uid,$type,$srcId);
         }
     }
     /**

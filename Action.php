@@ -1,6 +1,10 @@
 <?php
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
-
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Credits.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Common.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Users/Query.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Credits/List.php");
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Abstract/Credits.php");
 /**
  * OneCircle
  *
@@ -14,6 +18,22 @@ class OneCircle_Action extends Widget_Abstract_Contents
     public function __construct($request, $response, $params = NULL)
     {
         parent::__construct($request, $response, $params);
+        $this->db = Typecho_Db::get();
+        $this->res = new Typecho_Response();
+        $this->options = Helper::options();
+//        var_dump($this->request->getRequestUrl());
+        if (method_exists($this, $this->request->type)) {
+            call_user_func(array(
+                $this,
+                $this->request->type
+            ));
+        } else {
+            $this->defaults();
+        }
+    }
+    public function action()
+    {
+        $this->on($this->request);
     }
 
     // do /oneaction  apis
@@ -111,8 +131,56 @@ class OneCircle_Action extends Widget_Abstract_Contents
         }
 
     }
+    //组合返回值
+    public function make_response($code, $msg, $data = null)
+    {
+        $response = [
+            'code' => $code,
+            'msg' => $msg,
+        ];
 
+        if ($data !== null) {
+            $response['data'] = $data;
+        }
+        $this->response->throwJson($response);
+        return $response;
+    }
+    //组合返回值 成功
+    public function make_success($data = null)
+    {
+        return $this->make_response(1, '操作成功！', $data);
+    }
 
+    //组合返回值 失败
+    public function make_error($msg = '', $code = 0)
+    {
+        return $this->make_response($code, $msg);
+    }
+    public function jifenPay(){
+        $postid = $this->request->get('post_id');
+        if ($postid=='' or $postid == ' ' or empty($postid)){
+            $this->make_error("参数错误!");
+        }
+        $user = Typecho_Widget::widget('Widget_User');
+        if($user->have()){
+            // 检查 post 是否存在
+            $cid = $this->db->fetchObject($this->db->select('cid')->from('table.contents')->where('cid = ?',$postid))->cid;
+            if (empty($cid)){
+                $this->make_error("错误的cid");
+            }
+            $jifenPay = $this->db->fetchObject($this->db->select('str_value')->from('table.fields')->where('cid = ? and name = ?',$cid,'jifenPay'))->str_value;
+
+            if ($user->credits < $jifenPay){
+                $this->make_error("积分不足");
+            }
+            Widget_Common::credits('jifenpay',$user->uid,$postid);
+            $this->make_success();
+
+        }else{
+            $this->make_error("没有登录!");
+        }
+
+    }
     // 解析网页内容
     function getUrlContent($url, $ecms = 0, $post = 0)
     {
