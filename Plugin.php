@@ -6,7 +6,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 加入了权限设置：修改注册时默认用户组，贡献者可直接发布文章无需审核,前台注册支持用户输入密码<br>
  * @package OneCircle
  * @author gogobody
- * @version 4.5
+ * @version 4.6
  * @link https://one.ijkxs.com
  */
 
@@ -197,7 +197,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         <link href="<?php echo $options->themeUrl('/assets/admin/css/one.setting.min.css','onecircle') ?>" rel="stylesheet" type="text/css" />
         <div>
             <div class="j-aside">
-                <div class="logo">ONE <?php echo $pluginV ?><br><small style="font-size: 10px"></small></div>
+                <div class="logo">ONE <?php echo $pluginV ?><br><small style="font-size: 10px"></small><br>
+                <a href="/admin/options-theme.php" target="_self" rel="noopener noreferrer">点我去主题设置</a></div>
                 <ul class="j-setting-tab">
                     <li data-current="j-setting-global">公共设置</li>
                     <li data-current="j-setting-qrcode">二维码设置</li>
@@ -1064,7 +1065,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         $type = 'login';
         if($user->have()){
             $srcId = null;
-            Typecho_Widget::widget('Widget_Users_Credits')->setUserCredits($user->uid,$type,$srcId);
+            Typecho_Widget::widget('Widget_User_Credits')->setUserCredits($user->uid,$type,$srcId);
         }
     }
     public static function finishComment($archive){
