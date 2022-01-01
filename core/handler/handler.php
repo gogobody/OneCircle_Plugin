@@ -6,7 +6,7 @@
  */
 define('PLUGINROOT','OneCircle/');
 define('ABSPLUGINROOT',dirname(dirname(__DIR__)));
-require_once PLUGINROOT.'core/utils/JKUtils.php';
+require_once ABSPLUGINROOT.'/core/utils/JKUtils.php';
 
 class Widget_CustomHandler extends Widget_Archive
 {

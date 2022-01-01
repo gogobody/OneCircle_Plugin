@@ -11,8 +11,8 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  */
 
 require(__DIR__ . DIRECTORY_SEPARATOR . "Action.php");
-require_once 'core/utils/JKUtils.php';
-require_once 'core/handler/handler.php';
+require(__DIR__ . DIRECTORY_SEPARATOR . 'core/utils/JKUtils.php');
+require(__DIR__ . DIRECTORY_SEPARATOR . 'core/handler/handler.php');
 
 // require abstrace
 require_once(__DIR__ . DIRECTORY_SEPARATOR . "widget/Abstract/Credits.php");
