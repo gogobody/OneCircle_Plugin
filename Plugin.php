@@ -463,7 +463,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
             /*求插件设置的分类id数据与用户勾选的分类数据交集*/
 //$result=array_intersect($tcat,$con['category']);   && count($result)==0
             /*如果用户是贡献者临时给予编辑权限，并且非特例分类*/
-            if ($obj->author->group == 'contributor' || $obj->user->group == 'contributor') {
+            if (($obj->have() && $obj->author->group == 'contributor') || $obj->user->group == 'contributor') {
                 $obj->user->group = 'editor';
             }
         }
