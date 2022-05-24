@@ -212,23 +212,23 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         <script src="<?php echo $options->themeUrl('/assets/admin/js/one.setting.min.js','onecircle')?>"></script>
     <?php
         /** 分类名称 */
-//        $name = new Typecho_Widget_Helper_Form_Element_Text('word', NULL, 'Hello World', _t('说点什么'));
+//        $name = new Typecho_Widget_Helper_Form_Element_Text('word', NULL, 'Hello World', '说点什么');
 //        $form->addInput($name);
         $yonghuzu = new Typecho_Widget_Helper_Form_Element_Radio('yonghuzu', array(
-            'visitor' => _t('访问者'),
-            'subscriber' => _t('关注者'),
-            'contributor' => _t('贡献者'),
-            'editor' => _t('编辑'),
-            'administrator' => _t('管理员')
-        ), 'contributor', _t('注册用户默认用户组设置'), _t('<p class="description">不同的用户组拥有不同的权限，具体的权限分配表请<a href="http://docs.typecho.org/develop/acl" target="_blank" rel="noopener noreferrer">参考这里</a>.</p>'));
+            'visitor' => '访问者',
+            'subscriber' => '关注者',
+            'contributor' => '贡献者',
+            'editor' => '编辑',
+            'administrator' => '管理员'
+        ), 'contributor', '注册用户默认用户组设置', '<p class="description">不同的用户组拥有不同的权限，具体的权限分配表请<a href="http://docs.typecho.org/develop/acl" target="_blank" rel="noopener noreferrer">参考这里</a>.</p>');
         $yonghuzu->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($yonghuzu);
 
         $tuozhan = new Typecho_Widget_Helper_Form_Element_Checkbox('tuozhan',
-            array('contributor-nb' => _t('勾选该选项让【贡献者】直接发布文章无需审核'),
-                'register-nb' => _t('勾选该选项后台注册功能将可以直接设置注册密码'),
+            array('contributor-nb' => '勾选该选项让【贡献者】直接发布文章无需审核',
+                'register-nb' => '勾选该选项后台注册功能将可以直接设置注册密码',
             ),
-            array('contributor-nb','register-nb'), _t('拓展设置'), _t(''));
+            array('contributor-nb','register-nb'), '拓展设置', '');
         $tuozhan->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($tuozhan->multiMode());
 
@@ -238,26 +238,26 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         $row = $db->fetchRow($select);
         if (!empty($row)) $umid = $row['mid'];
         else $umid = 1;
-        $registeruserMid = new Typecho_Widget_Helper_Form_Element_Text('registeruserMid', NULL, _t($umid), _t('用户注册后默认关注哪个分类（int）'));
+        $registeruserMid = new Typecho_Widget_Helper_Form_Element_Text('registeruserMid', NULL, $umid, '用户注册后默认关注哪个分类（int）');
         $registeruserMid->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($registeruserMid);
 
-        $focususerMid = new Typecho_Widget_Helper_Form_Element_Text('focususerMid', NULL, 1, _t('发布关注消息到哪个分类（int）'));
+        $focususerMid = new Typecho_Widget_Helper_Form_Element_Text('focususerMid', NULL, 1, '发布关注消息到哪个分类（int）');
         $focususerMid->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($focususerMid);
 
-        $amapJsKey= new Typecho_Widget_Helper_Form_Element_Text('amapJsKey', NULL, '', _t('高德地图 Web端(JS API) key'));
+        $amapJsKey= new Typecho_Widget_Helper_Form_Element_Text('amapJsKey', NULL, '', '高德地图 Web端(JS API key');
         $amapJsKey->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($amapJsKey);
 
-        $amapWebKey= new Typecho_Widget_Helper_Form_Element_Text('amapWebKey', NULL, '', _t('高德地图 Web服务 key'));
+        $amapWebKey= new Typecho_Widget_Helper_Form_Element_Text('amapWebKey', NULL, '', '高德地图 Web服务 key');
         $amapWebKey->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($amapWebKey);
 
         $allowNoneAdminUpload = new Typecho_Widget_Helper_Form_Element_Radio('allowNoneAdminUpload',array(
-                1 => _t('允许'),
-                0 => _t('不允许')
-        ),0,_t('是否允许非管理员后台上传文件'),_t('此设置仅针对于后台文章编辑有效'));
+                1 => '允许',
+                0 => '不允许'
+        ),0,'是否允许非管理员后台上传文件','此设置仅针对于后台文章编辑有效');
         $allowNoneAdminUpload->setAttribute('class', 'j-setting-content j-setting-global');
         $form->addInput($allowNoneAdminUpload);
 
@@ -266,19 +266,19 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         $wxpay = $options->themeUrl('assets/img/donate/wxpay.jpg','onecircle');
 
         //支付宝二维码
-        $AlipayPic = new Typecho_Widget_Helper_Form_Element_Text('AlipayPic', NULL, _t($alipay), _t('支付宝二维码'), _t('打赏中使用的支付宝二维码,建议尺寸小于250×250,且为正方形'));
+        $AlipayPic = new Typecho_Widget_Helper_Form_Element_Text('AlipayPic', NULL, $alipay, '支付宝二维码', '打赏中使用的支付宝二维码,建议尺寸小于250×250,且为正方形');
         $AlipayPic->setAttribute('class', 'j-setting-content j-setting-qrcode');
         $form->addInput($AlipayPic);
         //微信二维码
-        $WechatPic = new Typecho_Widget_Helper_Form_Element_Text('WechatPic', NULL, _t($wxpay), _t('微信二维码'), _t('打赏中使用的微信二维码,建议尺寸小于250×250,且为正方形'));
+        $WechatPic = new Typecho_Widget_Helper_Form_Element_Text('WechatPic', NULL, $wxpay, '微信二维码', '打赏中使用的微信二维码,建议尺寸小于250×250,且为正方形');
         $WechatPic->setAttribute('class', 'j-setting-content j-setting-qrcode');
         $form->addInput($WechatPic);
 
         // 资源设置
         $enableResource = new Typecho_Widget_Helper_Form_Element_Radio('enableResource',array(
-                1 => _t('开启'),
-                0 => _t('关闭')
-        ),1,_t('开启资源页'),_t('是否开启资源页'));
+                1 => '开启',
+                0 => '关闭'
+        ),1,'开启资源页','是否开启资源页');
         $enableResource->setAttribute('class', 'j-setting-content j-setting-resource');
         $form->addInput($enableResource);
 
@@ -325,34 +325,34 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
 //            $res['userSign'] = '太懒了还没有个性签名';
 //            $tags['userTag'] = '学生,重庆';
 //        }
-        $useravatar = new Typecho_Widget_Helper_Form_Element_Text('userAvatar', NULL, null, _t('个人头像'),
+        $useravatar = new Typecho_Widget_Helper_Form_Element_Text('userAvatar', NULL, null, '个人头像',
         '<div id="avatar-uploader" style="width: 100%;text-align: right;flex-direction: row-reverse;display: none"><div class="row XCHRv" style="width: 100%;display: block"><div id="zz-img-show"></div><div class="zz-add-img "><input id="zz-img-file" type="file" accept="image/*" multiple="multiple"><button id="zz-img-add" type="button"><span class="chevereto-pup-button-icon"><svg class="chevereto-pup-button-icon" xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M76.7 87.5c12.8 0 23.3-13.3 23.3-29.4 0-13.6-5.2-25.7-15.4-27.5 0 0-3.5-0.7-5.6 1.7 0 0 0.6 9.4-2.9 12.6 0 0 8.7-32.4-23.7-32.4 -29.3 0-22.5 34.5-22.5 34.5 -5-6.4-0.6-19.6-0.6-19.6 -2.5-2.6-6.1-2.5-6.1-2.5C10.9 25 0 39.1 0 54.6c0 15.5 9.3 32.7 29.3 32.7 2 0 6.4 0 11.7 0V68.5h-13l22-22 22 22H59v18.8C68.6 87.4 76.7 87.5 76.7 87.5z" style="fill: currentcolor;"></path></svg></span><span class="chevereto-pup-button-text">上传</span></button></div></div></div>');
         $useravatar->setAttribute("id","personal-userAvatar");
         $form->addInput($useravatar);
 
-        $userbackimg = new Typecho_Widget_Helper_Form_Element_Text('userBackImg', NULL, null, _t('背景图片'));
+        $userbackimg = new Typecho_Widget_Helper_Form_Element_Text('userBackImg', NULL, null, '背景图片');
         $form->addInput($userbackimg);
 
-        $sign = new Typecho_Widget_Helper_Form_Element_Text('userSign', NULL, null, _t('个性签名'));
+        $sign = new Typecho_Widget_Helper_Form_Element_Text('userSign', NULL, null, '个性签名');
         $form->addInput($sign);
 
-        $tag = new Typecho_Widget_Helper_Form_Element_Text('userTag', NULL, null, _t('设置个人TAG,用英文逗号分隔'));
+        $tag = new Typecho_Widget_Helper_Form_Element_Text('userTag', NULL, null, '设置个人TAG,用英文逗号分隔');
         $form->addInput($tag);
 
         $sex = new Typecho_Widget_Helper_Form_Element_Radio('userSex',array(
-                1 => _t('男'),
-                0 => _t("女")
+                1 => '男',
+                0 => "女"
         ),1,"选择性别","");
         $form->addInput($sex);
 
         $lifeStatus = new Typecho_Widget_Helper_Form_Element_Radio('userLifeStatus',array(
-            '' => _t('保密'),
-            '今日单身' => _t('今日单身'),
-            '等TA出现' => _t('等TA出现'),
-            '自由可撩' => _t('自由可撩'),
-            '心里有人' => _t('心里有人'),
-            '恋爱中' => _t('恋爱中'),
-            '一言难尽' => _t('一言难尽'),
+            '' => '保密',
+            '今日单身' => '今日单身',
+            '等TA出现' => '等TA出现',
+            '自由可撩' => '自由可撩',
+            '心里有人' => '心里有人',
+            '恋爱中' => '恋爱中',
+            '一言难尽' => '一言难尽',
         ),"","情感状态");
         $form->addInput($lifeStatus);
         //
@@ -433,7 +433,7 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         Typecho_Cookie::delete('__typecho_remember_name');
         Typecho_Cookie::delete('__typecho_remember_mail');
         /*发出提示*/
-        $obj->widget('Widget_Notice')->set(_t('用户 <strong>%s</strong> 已经成功注册, 密码为 <strong>%s</strong>', $obj->screenName, $wPassword), 'success');
+        $obj->widget('Widget_Notice')->set('用户 <strong>%s</strong> 已经成功注册, 密码为 <strong>%s</strong>', $obj->screenName, $wPassword, 'success');
         // add default follow circle
         OneCircle_Plugin::addDefaultTag($obj->user->uid);
         //注册积分
@@ -489,8 +489,8 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
             $obj->widget('Widget_Service')->sendPing($obj->cid, $trackback);
             /** 设置提示信息 */
             $obj->widget('Widget_Notice')->set('post' == $obj->type ?
-                _t('文章 "<a href="%s">%s</a>" 已经发布', $obj->permalink, $obj->title) :
-                _t('文章 "%s" 等待审核', $obj->title), 'success');
+                _t('文章 "<a href="%s">%s</a>" 已经发布', $obj->permalink, $obj->title):
+                _t('文章 "%s" 等待审核', $obj->title, 'success'));
             /** 设置高亮 */
             $obj->widget('Widget_Notice')->highlight($obj->theId);
             /** 获取页面偏移 */
@@ -1018,17 +1018,17 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
         $loading = Helper::options()->themeUrl('assets/img/loading.svg', 'onecircle');
         $returnHtml = '
              <div class="support-author text-center">
-                 <button id="support_author" data-toggle="modal" data-target="#donateModal" class="btn btn-pay btn-danger btn-rounded"><svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-wallet-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v2h6a.5.5 0 0 1 .5.5c0 .253.08.644.306.958.207.288.557.542 1.194.542.637 0 .987-.254 1.194-.542.226-.314.306-.705.306-.958a.5.5 0 0 1 .5-.5h6v-2A1.5 1.5 0 0 0 14.5 2h-13z"/><path d="M16 6.5h-5.551a2.678 2.678 0 0 1-.443 1.042C9.613 8.088 8.963 8.5 8 8.5c-.963 0-1.613-.412-2.006-.958A2.679 2.679 0 0 1 5.551 6.5H0v6A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-6z"/></svg><span>&nbsp;' . _t("赞赏") . '</span></button>
+                 <button id="support_author" data-toggle="modal" data-target="#donateModal" class="btn btn-pay btn-danger btn-rounded"><svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-wallet-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v2h6a.5.5 0 0 1 .5.5c0 .253.08.644.306.958.207.288.557.542 1.194.542.637 0 .987-.254 1.194-.542.226-.314.306-.705.306-.958a.5.5 0 0 1 .5-.5h6v-2A1.5 1.5 0 0 0 14.5 2h-13z"/><path d="M16 6.5h-5.551a2.678 2.678 0 0 1-.443 1.042C9.613 8.088 8.963 8.5 8 8.5c-.963 0-1.613-.412-2.006-.958A2.679 2.679 0 0 1 5.551 6.5H0v6A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-6z"/></svg><span>&nbsp;' . "赞赏" . '</span></button>
              </div>
              <div id="donateModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" data-backdrop="" aria-labelledby="mySmallModalLabel">
                  <div class="modal-dialog modal-sm  modal-dialog-centered" role="document">
                      <div class="modal-content">
                          <div class="modal-header">
-                             <h6 class="modal-title">' . _t("赞赏作者") . '</h6>
+                             <h6 class="modal-title">' . "赞赏作者" . '</h6>
                              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                          </div>
                          <div class="modal-body">
-                             <p class="text-center article__reward"> <strong class="article__reward-text">' . _t("扫一扫支付") . '</strong> </p>
+                             <p class="text-center article__reward"> <strong class="article__reward-text">' . "扫一扫支付" . '</strong> </p>
                              <div class="tab-content">';
         if ($options->AlipayPic != null) {
             $returnHtml .= '<img aria-labelledby="alipay-tab" class="lazyload pay-img tab-pane fade active show" id="alipay_author" role="tabpanel" src="' . $loading . '" data-src="' . $options->AlipayPic . '" />';
@@ -1041,11 +1041,11 @@ class OneCircle_Plugin extends Widget_Archive implements Typecho_Plugin_Interfac
                              <div class="article__reward-border mb20 mt10"></div><div class="text-center">
                              <ul class="text-center nav d-block" role="tablist">';
         if ($options->AlipayPic != null) {
-            $returnHtml .= '<li class="pay-button nav-item" role="presentation" class="active"><button href="#alipay_author" id="alipay-tab" aria-controls="alipay_author" role="tab" data-toggle="tab" aria-selected="true" class="btn m-b-xs m-r-xs btn-blue"><svg t="1606310341446" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2836" width="1em" height="1em"><path d="M233.6 576c-12.8 9.6-25.6 22.4-28.8 41.6-6.4 25.6 0 54.4 22.4 80 28.8 28.8 70.4 35.2 89.6 38.4 51.2 3.2 105.6-22.4 144-51.2 16-9.6 44.8-35.2 70.4-67.2-57.6-28.8-131.2-64-208-60.8-38.4 0-67.2 6.4-89.6 19.2zM976 710.4c25.6-60.8 41.6-128 41.6-198.4C1017.6 233.6 790.4 6.4 512 6.4S6.4 233.6 6.4 512s227.2 505.6 505.6 505.6c166.4 0 316.8-83.2 409.6-208-86.4-41.6-230.4-115.2-316.8-156.8-41.6 48-102.4 96-172.8 115.2-44.8 12.8-83.2 19.2-124.8 9.6s-70.4-28.8-89.6-48c-9.6-9.6-19.2-22.4-25.6-38.4v3.2s-3.2-6.4-6.4-19.2c0-6.4-3.2-12.8-3.2-19.2v-35.2c3.2-19.2 12.8-44.8 35.2-64 48-48 112-51.2 147.2-48 48 0 137.6 22.4 208 48 19.2-41.6 32-89.6 41.6-118.4H307.2v-32H464v-64H275.2v-32H464v-64c0-16 3.2-22.4 16-22.4h73.6v83.2h204.8v32H553.6v64h163.2s-16 92.8-67.2 182.4C761.6 624 921.6 688 976 710.4z" fill="#ffffff" p-id="2837" data-spm-anchor-id="a313x.7781069.0.i3" class="selected"></path></svg><span>&nbsp;' . _t("支付宝支付") . '</span></button>
+            $returnHtml .= '<li class="pay-button nav-item" role="presentation" class="active"><button href="#alipay_author" id="alipay-tab" aria-controls="alipay_author" role="tab" data-toggle="tab" aria-selected="true" class="btn m-b-xs m-r-xs btn-blue"><svg t="1606310341446" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2836" width="1em" height="1em"><path d="M233.6 576c-12.8 9.6-25.6 22.4-28.8 41.6-6.4 25.6 0 54.4 22.4 80 28.8 28.8 70.4 35.2 89.6 38.4 51.2 3.2 105.6-22.4 144-51.2 16-9.6 44.8-35.2 70.4-67.2-57.6-28.8-131.2-64-208-60.8-38.4 0-67.2 6.4-89.6 19.2zM976 710.4c25.6-60.8 41.6-128 41.6-198.4C1017.6 233.6 790.4 6.4 512 6.4S6.4 233.6 6.4 512s227.2 505.6 505.6 505.6c166.4 0 316.8-83.2 409.6-208-86.4-41.6-230.4-115.2-316.8-156.8-41.6 48-102.4 96-172.8 115.2-44.8 12.8-83.2 19.2-124.8 9.6s-70.4-28.8-89.6-48c-9.6-9.6-19.2-22.4-25.6-38.4v3.2s-3.2-6.4-6.4-19.2c0-6.4-3.2-12.8-3.2-19.2v-35.2c3.2-19.2 12.8-44.8 35.2-64 48-48 112-51.2 147.2-48 48 0 137.6 22.4 208 48 19.2-41.6 32-89.6 41.6-118.4H307.2v-32H464v-64H275.2v-32H464v-64c0-16 3.2-22.4 16-22.4h73.6v83.2h204.8v32H553.6v64h163.2s-16 92.8-67.2 182.4C761.6 624 921.6 688 976 710.4z" fill="#ffffff" p-id="2837" data-spm-anchor-id="a313x.7781069.0.i3" class="selected"></path></svg><span>&nbsp;' . "支付宝支付" . '</span></button>
                                  </li>';
         }
         if ($options->WechatPic != null) {
-            $returnHtml .= '<li class="pay-button nav-item" role="presentation"><button href="#wechatpay_author" id="wechatpay-tab" aria-controls="wechatpay_author" role="tab" data-toggle="tab" aria-selected="false" class="btn m-b-xs btn-always-success"><svg t="1606304793200" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4257" width="1em" height="1em"><path d="M390.4 615.5c-4.1 2.1-8.3 3.1-13.4 3.1-11.4 0-20.7-6.2-25.9-15.5L349 599l-81.7-178c-1-2.1-1-4.1-1-6.2 0-8.3 6.2-14.5 14.5-14.5 3.1 0 6.2 1 9.3 3.1l96.2 68.3c7.2 4.1 15.5 7.2 24.8 7.2 5.2 0 10.3-1 15.5-3.1l451.1-200.7C797 179.9 663.6 117.8 512.5 117.8c-246.2 0-446.9 166.6-446.9 372.4 0 111.7 60 213.1 154.1 281.4 7.2 5.2 12.4 14.5 12.4 23.8 0 3.1-1 6.2-2.1 9.3-7.2 27.9-19.7 73.5-19.7 75.5-1 3.1-2.1 7.2-2.1 11.4 0 8.3 6.2 14.5 14.5 14.5 3.1 0 6.2-1 8.3-3.1l97.2-56.9c7.2-4.1 15.5-7.2 23.8-7.2 4.1 0 9.3 1 13.4 2.1 45.5 13.4 95.2 20.7 145.9 20.7 246.2 0 446.9-166.6 446.9-372.4 0-62.1-18.6-121-50.7-172.8l-514 296.9-3.1 2.1z" fill="#ffffff" p-id="4258" data-spm-anchor-id="a313x.7781069.0.i2" class="selected"></path></svg><span>&nbsp;' . _t("微信支付") . '</span></button>
+            $returnHtml .= '<li class="pay-button nav-item" role="presentation"><button href="#wechatpay_author" id="wechatpay-tab" aria-controls="wechatpay_author" role="tab" data-toggle="tab" aria-selected="false" class="btn m-b-xs btn-always-success"><svg t="1606304793200" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4257" width="1em" height="1em"><path d="M390.4 615.5c-4.1 2.1-8.3 3.1-13.4 3.1-11.4 0-20.7-6.2-25.9-15.5L349 599l-81.7-178c-1-2.1-1-4.1-1-6.2 0-8.3 6.2-14.5 14.5-14.5 3.1 0 6.2 1 9.3 3.1l96.2 68.3c7.2 4.1 15.5 7.2 24.8 7.2 5.2 0 10.3-1 15.5-3.1l451.1-200.7C797 179.9 663.6 117.8 512.5 117.8c-246.2 0-446.9 166.6-446.9 372.4 0 111.7 60 213.1 154.1 281.4 7.2 5.2 12.4 14.5 12.4 23.8 0 3.1-1 6.2-2.1 9.3-7.2 27.9-19.7 73.5-19.7 75.5-1 3.1-2.1 7.2-2.1 11.4 0 8.3 6.2 14.5 14.5 14.5 3.1 0 6.2-1 8.3-3.1l97.2-56.9c7.2-4.1 15.5-7.2 23.8-7.2 4.1 0 9.3 1 13.4 2.1 45.5 13.4 95.2 20.7 145.9 20.7 246.2 0 446.9-166.6 446.9-372.4 0-62.1-18.6-121-50.7-172.8l-514 296.9-3.1 2.1z" fill="#ffffff" p-id="4258" data-spm-anchor-id="a313x.7781069.0.i2" class="selected"></path></svg><span>&nbsp;' . "微信支付" . '</span></button>
                                  </li>';
         }
 

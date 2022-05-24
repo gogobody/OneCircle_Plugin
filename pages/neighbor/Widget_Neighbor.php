@@ -1,6 +1,6 @@
 <?php
 
-include Helper::options()->themeFile('onecircle','libs/language.php');
+include_once Helper::options()->themeFile('onecircle','libs/language.php');
 
 /**
  * neighbor

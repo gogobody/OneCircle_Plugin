@@ -1,6 +1,7 @@
 <?php
-
-define("MANAGEURL","/extending.php?panel=OneCircle%2Fmanage%2Fmanage-cat-tags.php");
+if (!defined("CIRCLE_MANAGEURL_TAG")){
+    define("CIRCLE_MANAGEURL_TAG","/extending.php?panel=OneCircle%2Fmanage%2Fmanage-cat-tags.php");
+}
 
 class Widget_CateTag_Edit extends Widget_Abstract_Metas
 {
@@ -108,7 +109,7 @@ class Widget_CateTag_Edit extends Widget_Abstract_Metas
     public function form($action = NULL)
     {
         /** 构建表格 */
-        $form = new Typecho_Widget_Helper_Form($this->security->getAdminUrl(MANAGEURL),
+        $form = new Typecho_Widget_Helper_Form($this->security->getAdminUrl(CIRCLE_MANAGEURL_TAG),
             Typecho_Widget_Helper_Form::POST_METHOD);
 
         /** 标签名称 */
@@ -141,7 +142,7 @@ class Widget_CateTag_Edit extends Widget_Abstract_Metas
                 ->where('type = ?', 'catetag')->limit(1));
 
             if (!$meta) {
-                $this->response->redirect(Typecho_Common::url(MANAGEURL, $this->options->adminUrl));
+                $this->response->redirect(Typecho_Common::url(CIRCLE_MANAGEURL_TAG, $this->options->adminUrl));
             }
 
             $name->value($meta['name']);
@@ -207,7 +208,7 @@ class Widget_CateTag_Edit extends Widget_Abstract_Metas
             $this->permalink, $this->name), 'success');
 
         /** 转向原页 */
-        $this->response->redirect(Typecho_Common::url(MANAGEURL, $this->options->adminUrl));
+        $this->response->redirect(Typecho_Common::url(CIRCLE_MANAGEURL_TAG, $this->options->adminUrl));
     }
 
     /**
@@ -239,7 +240,7 @@ class Widget_CateTag_Edit extends Widget_Abstract_Metas
             $this->permalink, $this->name), 'success');
 
         /** 转向原页 */
-        $this->response->redirect(Typecho_Common::url(MANAGEURL, $this->options->adminUrl));
+        $this->response->redirect(Typecho_Common::url(CIRCLE_MANAGEURL_TAG, $this->options->adminUrl));
     }
 
     /**
@@ -267,7 +268,7 @@ class Widget_CateTag_Edit extends Widget_Abstract_Metas
             $deleteCount > 0 ? 'success' : 'notice');
 
         /** 转向原页 */
-        $this->response->redirect(Typecho_Common::url(MANAGEURL, $this->options->adminUrl));
+        $this->response->redirect(Typecho_Common::url(CIRCLE_MANAGEURL_TAG, $this->options->adminUrl));
     }
 
     /**
@@ -301,7 +302,7 @@ class Widget_CateTag_Edit extends Widget_Abstract_Metas
         }
 
         /** 转向原页 */
-        $this->response->redirect(Typecho_Common::url(MANAGEURL, $this->options->adminUrl));
+        $this->response->redirect(Typecho_Common::url(CIRCLE_MANAGEURL_TAG, $this->options->adminUrl));
     }
 
     /**

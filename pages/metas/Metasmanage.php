@@ -60,7 +60,7 @@ class Widget_Metasmanage extends Typecho_Widget
         $db = Typecho_Db::get();
         $sql = "SELECT t.*,t1.name AS tagname,t1.slug AS tagslug,t1.`order` AS tagorder FROM typecho_metas t LEFT JOIN `".$db->getPrefix()."metas` t1 on t.`type` = 'category' and t1.`type` = 'catetag' and t.`tagid` = t1.`mid` WHERE t.`type` = 'category' ORDER BY t1.`order`,t.`order`";
         // 压入 this
-        $res = $db->fetchAll($sql, array($archive, 'push'));
+        $res = @$db->fetchAll($sql, array($archive, 'push'));
         // while($this->next())
         // 选取有 tag 的那些 categories
         $details = array();
